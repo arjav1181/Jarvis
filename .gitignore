@@ -113,3 +113,9 @@ godseye/_server/.dist-static.json
 
 # coder undo snapshots — runtime state, never source
 undo/
+
+# The approval audit trail. Written by core/policy.py to the data root, and it
+# lands in the repository when JARVIS_DATA is unset — which is what a test run
+# does. Runtime state, never source.
+audit.jsonl
+*.sqlite
