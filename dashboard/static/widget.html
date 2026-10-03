@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JARVIS</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<style>
+  :root { --bg:#00060a; --pri:#00d4ff; --acc:#ff6b00; --acc2:#ffcc00;
+          --red:#ff4d6d; --dim:#7aa8b8; --ok:#3ddc97; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:radial-gradient(120% 90% at 50% -10%, #06212e 0%, var(--bg) 60%);
+         color:#eaf6fb; font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;
+         min-height:100vh; display:flex; flex-direction:column; }
+  header { padding:18px 20px 10px; display:flex; align-items:center; gap:12px; }
+  h1 { margin:0; font-size:19px; letter-spacing:3px; color:var(--pri);
+       text-shadow:0 0 18px rgba(0,212,255,.5); }
+  .sub { color:var(--dim); font-size:11px; letter-spacing:1px; }
+  main { flex:1; padding:6px 16px 26px; }
+  .cards { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 16px; }
+  .card { background:rgba(0,212,255,.06); border:1px solid #0d3347;
+          border-radius:10px; padding:11px 13px; min-width:104px; }
+  .card .k { color:var(--dim); font-size:9px; letter-spacing:1px; }
+  .card .v { font-size:23px; color:var(--pri); line-height:1.25; }
+  .card.warn .v { color:var(--acc); }
+  .brief { border-left:2px solid var(--acc); padding:9px 12px; margin:10px 0;
+           background:rgba(255,107,0,.06); font-size:13px; }
+  .row { display:flex; gap:9px; flex-wrap:wrap; margin-top:10px; }
+  button { background:rgba(0,212,255,.1); border:1px solid #14607f; color:#d8f4ff;
+           border-radius:8px; padding:11px 15px; font-size:14px; cursor:pointer; }
+  button:active { background:rgba(0,212,255,.28); }
+  button.warn { border-color:#7a3a00; background:rgba(255,107,0,.1); color:#ffd9b8; }
+  input { flex:1; min-width:180px; background:#02141d; border:1px solid #0d3347;
+          color:#eaf6fb; border-radius:8px; padding:11px 12px; font-size:14px; }
+  .log { color:var(--dim); font-size:11px; margin-top:14px;
+         max-height:34vh; overflow:auto; white-space:pre-wrap; }
+  a { color:var(--pri); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr));
+          gap:9px; margin:12px 0; }
+  .grid button { padding:13px 8px; text-align:center; font-size:20px; }
+  .grid span { display:block; font-size:9px; color:var(--dim); margin-top:5px;
+               letter-spacing:.5px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>JARVIS</h1>
+    <div class="sub" id="stamp">connecting…</div>
+  </div>
+</header>
+<main>
+  <div class="cards" id="cards">
+    <div class="card"><div class="k">APPROVALS</div><div class="v">·</div></div>
+    <div class="card"><div class="k">AGENTS</div><div class="v">·</div></div>
+    <div class="card"><div class="k">WATCHES</div><div class="v">·</div></div>
+  </div>
+  <div class="brief" id="brief">Tap BRIEFING for the morning round-up.</div>
+  <div class="row">
+    <input id="say" placeholder="say something…" autocomplete="off">
+    <button onclick="send()">SEND</button>
+    <button class="warn" onclick="briefing()">BRIEFING</button>
+  </div>
+  <div class="grid">
+    <button onclick="cc('overview')">⚙<span>CONTROL</span></button>
+    <button onclick="cc('watches')">👁<span>WATCHES</span></button>
+    <button onclick="cc('journal')">📓<span>JOURNAL</span></button>
+    <button onclick="cc('voice')">🎤<span>VOICE</span></button>
+    <button onclick="cc('security')">🛡<span>SECURITY</span></button>
+    <button onclick="cc('home')">💡<span>HOUSE</span></button>
+    <button onclick="cc('calendar')">🗓<span>CALENDAR</span></button>
+    <button onclick="cc('files')">📁<span>FILES</span></button>
+  </div>
+  <div class="log" id="log"></div>
+  <p style="color:var(--dim);font-size:11px">
+    Offline? queued work, messages and approvals still go out when the network
+    comes back. <a href="/">Open the full dashboard</a></p>
+</main>
+<script>
+  // This is the phone half: a small, fast surface for the three things that
+  // happen while you are not looking at the dashboard — approvals, the
+  // briefing, and getting a message to JARVIS out with one thumb.
+  const $ = id => document.getElementById(id);
+  let tok = localStorage.getItem('jarvis_token') || '';
+  const log = m => {
+    const el = $('log');
+    el.textContent = (m + '\n' + el.textContent).slice(0, 4000);
+  };
+
+  async function key() {
+    try {
+      const r = await fetch('/api/bootstrap-key', { method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const j = await r.json();
+      if (j.key) {
+        const h = await (await fetch('/auto-login?key=' + j.key)).text();
+        const m = h.match(/sessionStorage\.setItem\('jarvis_token','([^']+)'/);
+        if (m) { tok = m[1]; localStorage.setItem('jarvis_token', tok); }
+      }
+    } catch (e) { log('no session yet: ' + e.message); }
+  }
+
+  async function api(path, body) {
+    if (!tok) { await key(); if (!tok) return null; }
+    const r = await fetch(path, {
+      method: body ? 'POST' : 'GET',
+      headers: Object.assign({ 'Authorization': 'Bearer ' + tok },
+        body ? { 'Content-Type': 'application/json' } : {}),
+      body: body ? JSON.stringify(body) : undefined
+    });
+    try { return await r.json(); } catch (e) { return null; }
+  }
+
+  function paint(d) {
+    if (!d) return;
+    const cards = [
+      ['APPROVALS', (d.approvals || {}).waiting || 0,
+       (d.approvals || {}).waiting ? 'warn' : ''],
+      ['AGENTS', ((d.org || {}).active || 0) + '/' + ((d.org || {}).agents || 0), ''],
+      ['WATCHES', (d.proactive || {}).watches || 0, ''],
+    ];
+    $('cards').innerHTML = cards.map(([k, v, c]) =>
+      `<div class="card ${c}"><div class="k">${k}</div>` +
+      `<div class="v">${v}</div></div>`).join('');
+    $('stamp').textContent = new Date().toLocaleString();
+  }
+
+  async function refresh() {
+    const d = await api('/api/control');
+    if (d) paint(d);
+  }
+
+  async function briefing() {
+    $('brief').textContent = 'thinking…';
+    const r = await api('/api/proactive?view=briefing');
+    $('brief').textContent = (r && r.text) || 'nothing to say';
+  }
+
+  async function send() {
+    const box = $('say');
+    const text = box.value.trim();
+    if (!text) return;
+    box.value = '';
+    log('> ' + text);
+    const r = await api('/api/chat', { message: text });
+    if (r && r.reply) log(r.reply);
+    else if (r && r.error) log('! ' + r.error);
+    else log('(sent — it will answer in the dashboard)');
+  }
+
+  function cc(tab) {
+    const u = new URL('/', location.origin);
+    u.hash = 'control:' + tab;
+    location.href = u.toString();
+  }
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+  navigator.serviceWorker && navigator.serviceWorker.addEventListener(
+    'message', e => { if ((e.data || {}).type === 'jarvis.widget.data') refresh(); });
+
+  key().then(refresh);
+  setInterval(refresh, 30000);
+  $('say').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+</script>
+</body>
+</html>

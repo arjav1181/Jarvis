@@ -1,0 +1,12 @@
+# Bytes, not line endings.
+#
+# This repository carries a deliberate mix of CRLF and LF files (main.py and
+# most of actions/ are CRLF; the Phase 1+ files are LF). Without this file,
+# any checkout with core.autocrlf=true rewrites the CRLF ones and every diff
+# that touches them explodes into thousands of phantom changed lines — which
+# is exactly how a one-line edit ends up looking like a rewrite.
+* -text
+*.png binary
+*.ico binary
+*.obj binary
+*.woff2 binary

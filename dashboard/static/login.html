@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>JARVIS — MARK LIV</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #00060a;
+      --panel:   #010d14;
+      --dark:    #000d14;
+      --border:  #0d3347;
+      --border-b:#1a5c7a;
+      --pri:     #00d4ff;
+      --pri-dim: #007a99;
+      --pri-gho: #001f2e;
+      --green:   #00ff88;
+      --red:     #ff3355;
+      --text:    #8ffcff;
+      --text-dim:#3a8a9a;
+      --text-med:#5ab8cc;
+      --white:   #d8f8ff;
+    }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      width: 340px;
+      padding: 40px 32px;
+      background: var(--panel);
+      border: 1px solid var(--border-b);
+      border-radius: 4px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(0, 212, 255, 0.06);
+    }
+    .logo {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 10px;
+      margin-bottom: 6px;
+      color: var(--pri);
+    }
+    .logo em { color: var(--pri); font-style: normal; }
+    .sub {
+      font-size: 9px;
+      color: var(--pri-dim);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 8px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      margin-bottom: 16px;
+    }
+    .hint {
+      font-size: 11px;
+      color: var(--text-med);
+      line-height: 1.55;
+      margin-bottom: 22px;
+    }
+    .key-wrap { position: relative; margin-bottom: 14px; }
+    .key-input {
+      width: 100%;
+      padding: 16px 14px;
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--white);
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      letter-spacing: 10px;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      caret-color: var(--pri);
+    }
+    .key-input::placeholder {
+      color: rgba(58, 138, 154, 0.45);
+      letter-spacing: 6px;
+      font-size: 18px;
+    }
+    .key-input:focus {
+      border-color: var(--pri);
+      background: var(--pri-gho);
+      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.12);
+    }
+    .err {
+      font-size: 11px;
+      color: var(--red);
+      min-height: 16px;
+      margin-bottom: 12px;
+    }
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--pri-gho);
+      color: var(--pri);
+      border: 1px solid var(--pri-dim);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s, background 0.15s;
+      font-family: inherit;
+    }
+    .btn:hover  { background: #003044; opacity: 1; }
+    .btn:active { transform: scale(0.98); }
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn { flex: 1; }
+    .btn-alt {
+      background: var(--dark);
+      border-color: var(--border);
+      color: var(--text-med);
+      letter-spacing: 1px;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .btn-alt:hover { background: var(--pri-gho); border-color: var(--border-b); color: var(--text); }
+    .pw-input {
+      width: 100%;
+      padding: 16px 14px;
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--white);
+      font-size: 18px;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      letter-spacing: 4px;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      caret-color: var(--pri);
+    }
+    .pw-input::placeholder { color: rgba(58, 138, 154, 0.45); font-size: 13px; letter-spacing: 2px; }
+    .pw-input:focus {
+      border-color: var(--pri);
+      background: var(--pri-gho);
+      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.12);
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60% { transform: translateX(-7px); }
+      40%,80% { transform: translateX(7px); }
+    }
+    .shake { animation: shake 0.35s ease; }
+    .voice-note {
+      font-size: 9px;
+      color: var(--text-dim);
+      margin-top: 18px;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .voice-note code {
+      background: var(--dark);
+      border: 1px solid var(--border);
+      padding: 1px 4px;
+      border-radius: 2px;
+      font-family: 'Courier New', monospace;
+      font-size: 8px;
+      color: var(--text-med);
+    }
+    #reconnecting {
+      display: none;
+      color: var(--text-med);
+      font-size: 11px;
+      margin-bottom: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="logo">JARVIS</div>
+    <div class="sub">Remote Access</div>
+    <div class="badge">MARK LIV</div>
+    <p id="reconnecting">Reconnecting…</p>
+    <p class="hint" id="hint">Press <strong style="color:var(--white)">Remote Control</strong> in the JARVIS desktop app to get a QR code or session key.</p>
+    <div class="key-wrap">
+      <input class="key-input" id="key" type="text" maxlength="6"
+             autocomplete="off" autocorrect="off" spellcheck="false"
+             placeholder="· · · · · ·">
+      <input class="pw-input" id="pw" type="password"
+             autocomplete="current-password"
+             placeholder="password" style="display:none">
+    </div>
+    <div class="err" id="err"></div>
+    <div class="btn-row" style="margin-bottom:14px">
+      <button class="btn" id="main-btn" onclick="doMain()">CONNECT</button>
+      <button class="btn btn-alt" id="mode-btn" onclick="toggleMode()">USE PASSWORD</button>
+    </div>
+    <p class="voice-note">
+      MIC <strong style="color:var(--white)">Voice commands:</strong> open
+      <code>chrome://flags</code> on your phone, search
+      <code>Insecure origins treated as secure</code>, add your JARVIS URL, tap Relaunch.
+    </p>
+  </div>
+
+  <script>
+    (async function() {
+      const devTok = localStorage.getItem('jarvis_device_token');
+      if (!devTok) return;
+      document.getElementById('reconnecting').style.display = 'block';
+      try {
+        const r = await fetch('/api/device-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ device_token: devTok }),
+        });
+        const d = await r.json();
+        if (d.ok && d.token) {
+          sessionStorage.setItem('jarvis_key', d.key);
+          sessionStorage.setItem('jarvis_token', d.token);
+          location.replace('/');
+          return;
+        }
+      } catch (_) {}
+      localStorage.removeItem('jarvis_device_token');
+      document.getElementById('reconnecting').style.display = 'none';
+    })();
+
+    const inp = document.getElementById('key');
+    inp.focus();
+
+    (async function () {
+      try {
+        const r = await fetch('/api/setup/state');
+        const d = await r.json();
+        if (!d.server_mode) return;
+        const h = document.getElementById('hint');
+        if (h) h.innerHTML = 'Server mode — grab a one-time pairing key below, or open the auto-login link printed in the server console.';
+        try {
+          const ar = await fetch('/api/auth/state');
+          const ad = await ar.json();
+          if (ad.password_set && h) {
+            h.innerHTML = 'Server mode — log in with your <strong style="color:var(--white)">password</strong>, grab a one-time pairing key, or open the auto-login link printed in the server console.';
+          }
+        } catch (_) {}
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.cssText = 'width:100%;padding:12px;background:var(--dark);' +
+          'border:1px solid var(--border);color:var(--text);margin-bottom:14px;' +
+          'letter-spacing:2px';
+        btn.textContent = 'GET PAIRING KEY';
+        btn.onclick = async () => {
+          const errEl = document.getElementById('err');
+          try {
+            const rr = await fetch('/api/bootstrap-key', { method: 'POST' });
+            const dd = await rr.json();
+            if (dd.key) {
+              document.getElementById('key').value = dd.key;
+              doLogin();
+            } else if (errEl) {
+              errEl.textContent = dd.error || 'Unavailable';
+            }
+          } catch (_) {
+            if (errEl) errEl.textContent = 'Connection error';
+          }
+        };
+        h.insertAdjacentElement('afterend', btn);
+      } catch (_) {}
+    })();
+
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.toUpperCase().replace(/[^A-Z2-9]/g, '');
+      if (inp.value.length === 6) doLogin();
+    });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    // ── Password mode (persistent login on any device) ──────────────────
+    let _mode = 'key';
+
+    function setMode(m) {
+      _mode = m;
+      const keyEl  = document.getElementById('key');
+      const pwEl   = document.getElementById('pw');
+      const errEl  = document.getElementById('err');
+      const mainB  = document.getElementById('main-btn');
+      const modeB  = document.getElementById('mode-btn');
+      if (errEl) errEl.textContent = '';
+      if (m === 'pw') {
+        keyEl.style.display = 'none';
+        pwEl.style.display  = 'block';
+        mainB.textContent = 'LOG IN';
+        modeB.textContent = 'USE PAIRING KEY';
+        pwEl.value = '';
+        setTimeout(() => pwEl.focus(), 0);
+      } else {
+        pwEl.style.display  = 'none';
+        keyEl.style.display = 'block';
+        mainB.textContent = 'CONNECT';
+        modeB.textContent = 'USE PASSWORD';
+        keyEl.value = '';
+        setTimeout(() => keyEl.focus(), 0);
+      }
+    }
+
+    function toggleMode() { setMode(_mode === 'key' ? 'pw' : 'key'); }
+    function doMain() { _mode === 'pw' ? doPwLogin() : doLogin(); }
+
+    const pwEl = document.getElementById('pw');
+    pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doPwLogin(); });
+
+    async function doPwLogin() {
+      const errEl = document.getElementById('err');
+      const pw = pwEl.value;
+      if (!pw) { shake(); return; }
+      let data;
+      try {
+        const r = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        data = await r.json();
+      } catch (_) {
+        if (errEl) errEl.textContent = 'Connection error';
+        shake(); return;
+      }
+      if (data.ok && data.token) {
+        sessionStorage.setItem('jarvis_token', data.token);
+        sessionStorage.setItem('jarvis_key', data.key || '');
+        if (data.device_token) {
+          // Same silent-reconnect path as phone QR pairing: next visit
+          // on this browser logs in without typing anything.
+          localStorage.setItem('jarvis_device_token', data.device_token);
+        }
+        location.href = '/';
+        return;
+      }
+      const msgs = {
+        password_not_set: 'No password set yet — pair once with a key, then set one in Settings.',
+        locked: 'Too many attempts — wait 60 seconds.',
+        bad_password: 'Wrong password.'
+      };
+      if (errEl) {
+        errEl.textContent = (data && msgs[data.error])
+          || (data && data.error) || 'Login failed';
+      }
+      pwEl.value = '';
+      pwEl.focus();
+      shake();
+    }
+
+    async function doLogin() {
+      const key = inp.value.trim();
+      if (key.length < 6) { shake(); return; }
+      let data;
+      try {
+        const r = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: key })
+        });
+        data = await r.json();
+      } catch (e) {
+        document.getElementById('err').textContent = 'Connection error';
+        shake(); return;
+      }
+      if (data.ok && data.token) {
+        sessionStorage.setItem('jarvis_key', key);
+        sessionStorage.setItem('jarvis_token', data.token);
+        location.href = '/';
+      } else {
+        inp.value = '';
+        inp.focus();
+        document.getElementById('err').textContent = 'Invalid or expired key';
+        shake();
+      }
+    }
+
+    function shake() {
+      const c = document.getElementById('card');
+      c.classList.remove('shake');
+      void c.offsetWidth;
+      c.classList.add('shake');
+    }
+  </script>
+</body>
+</html>

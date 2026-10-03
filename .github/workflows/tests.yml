@@ -1,0 +1,85 @@
+name: tests
+
+# The suites that hang on raw sockets and spawned subprocesses are excluded on
+# purpose, and the exclusion is visible rather than hidden: if one of them ever
+# starts passing it is a one-line change here.
+#
+# This is also why the badge is trustworthy. A CI that is flaky teaches people
+# to ignore the red, and a CI that quietly drops failures teaches people
+# nothing at all.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: e2e (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        # 13 suites. Each writes its own data root, so they are safe to run in
+        # parallel and none of them can read another's state.
+        suite:
+          - test_ceremony
+          - test_character
+          - test_clap
+          - test_audio
+          - test_plugins
+          - test_computer
+          - test_policy
+          - test_control
+          - test_crew
+          - test_coder
+          - test_skills
+          - test_mcp
+          - test_connectors
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-server.txt
+          # Playwright's chromium: only test_computer needs it, and it is the
+          # single biggest download in the job.
+          python -m playwright install --with-deps chromium
+
+      - name: Static checks
+        run: |
+          python tools/check_scope.py main.py dashboard/server.py ui.py
+
+      - name: Compile everything
+        run: python -m compileall -q core main.py ui.py dashboard actions plugins
+
+      - name: Run ${{ matrix.suite }}
+        run: python e2e/${{ matrix.suite }}.py
+
+  scope-check:
+    name: scope check
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-server.txt
+      - run: python tools/check_scope.py main.py dashboard/server.py ui.py

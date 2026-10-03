@@ -1,0 +1,67 @@
+# ── Server-mode only (HF Space / headless dashboard) ─────────────────────────
+# Desktop extras (PyQt6, sounddevice, pyautogui, …) are intentionally absent.
+fastapi>=0.110,<1
+# Proxies the vendored God's Eye View Node server (dashboard/server.py)
+httpx>=0.27,<1
+uvicorn[standard]>=0.27,<1
+cryptography>=42,<50
+python-multipart>=0.0.9,<1
+# Web Push to the phone — VAPID signing + RFC 8291 payload encryption.
+# core/push.py degrades to "no subscribers notified" when this is missing,
+# so a Space that fails to install it still boots and serves the dashboard.
+pywebpush>=2.0,<3
+
+# Core runtime used by main.py even in server mode
+numpy>=1.24,<3
+google-genai>=2.8.0,<3
+psutil>=5.9,<8
+
+# Web / HTTP helpers used by actions (imported at discovery time)
+requests>=2.31,<3
+beautifulsoup4>=4.12,<5
+ddgs>=9,<10
+
+# Headless browser automation for server-mode go_to / get_text / screenshots
+playwright>=1.40,<2
+
+# Optional local voice fallbacks — lazy import; missing is fine
+# (edge-tts / faster-whisper omitted to keep the image small)
+
+# ── Documents: server mode was silently losing all of these ─────────────────
+# actions/file_processor.py imports every one of them at discovery time. A
+# missing package there does not crash the app — it quietly turns "read this
+# PDF" into "I can't open that file", which is worse than a crash because the
+# user is told the app is broken rather than told what is missing.
+pdfplumber                   # PDF text + tables
+pypdf>=4,<7                  # PDF fallback reader (maintained PyPDF2 fork)
+python-docx                  # .docx
+python-pptx                  # .pptx
+openpyxl                     # .xlsx
+pillow>=10,<13               # image handling; also required by qrcode[pil]
+
+# ── Vision + screen ─────────────────────────────────────────────────────────
+# opencv-python needs libGL at runtime — the Dockerfile installs it below.
+opencv-python-headless>=4.8,<5
+mss>=9,<11                   # screen capture
+
+# ── Media / misc ────────────────────────────────────────────────────────────
+youtube-transcript-api       # youtube_video action
+send2trash                   # actions — undo-friendly deletes
+pynvml                       # system_monitor + the HUD's NVIDIA GPU meter
+paho-mqtt                    # printer_control plugin
+tinytuya                     # home_assistant plugin — smart lights
+
+# ── Local voice, for a container that is meant to be an assistant ───────────
+# Previously omitted "to keep the image small", which is a reasonable trade
+# until you deploy it somewhere as a voice assistant and it cannot speak
+# without the gateway. edge-tts is ~2 MB and needs no model download.
+edge-tts>=6.1,<8
+miniaudio>=1.19,<2
+
+# ── Google OAuth (Gmail / Calendar) ─────────────────────────────────────────
+# core/gcal.py talks to Google over raw urllib and needs nothing, but the
+# dashboard's OAuth *callback* path and the Gmail plugin use the client
+# libraries. Declared so the connector works on a Space, not just on desktop.
+google-api-python-client
+google-auth-oauthlib
+google-auth-httplib2

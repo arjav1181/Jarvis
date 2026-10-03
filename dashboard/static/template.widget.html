@@ -1,0 +1,48 @@
+<!doctype html>
+<!-- A home-screen widget: three numbers and a line of briefing, nothing else.
+     The auth token is handed over by the page that hosts it, so this file
+     holds no credentials of its own. -->
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  body { margin:0; background:#00060a; color:#eaf6fb;
+         font:14px/1.4 system-ui,-apple-system,sans-serif; padding:12px; }
+  .k { color:#7aa8b8; font-size:9px; letter-spacing:1px; }
+  .v { color:#00d4ff; font-size:26px; line-height:1.1; }
+  .warn { color:#ff6b00; }
+  .row { display:flex; gap:14px; }
+  .head { color:#7aa8b8; font-size:10px; margin-top:8px; }
+</style></head>
+<body>
+  <div class="row">
+    <div><div class="k">APPROVALS</div><div class="v" id="a">·</div></div>
+    <div><div class="k">AGENTS</div><div class="v" id="g">·</div></div>
+    <div><div class="k">WORKING</div><div class="v" id="w">·</div></div>
+  </div>
+  <div class="head" id="h">—</div>
+<script>
+  let token = '';
+  function paint(d) {
+    document.getElementById('a').textContent = d.approvals ?? 0;
+    document.getElementById('a').className = 'v' + (d.approvals ? ' warn' : '');
+    document.getElementById('g').textContent = d.agents ?? 0;
+    document.getElementById('w').textContent = d.working ?? 0;
+    document.getElementById('h').textContent = d.headline || 'nothing to report';
+  }
+  async function load() {
+    try {
+      const r = await fetch('/api/widget',
+        { headers: { Authorization: 'Bearer ' + token } });
+      paint(await r.json());
+    } catch (e) { /* offline: leave the last numbers up */ }
+  }
+  // the page hosting the widget hands over its short-lived token
+  addEventListener('message', e => {
+    if (e.data && e.data.type === 'jarvis.widget.token') {
+      token = e.data.token; load();
+    }
+  });
+  addEventListener('click', () => { if (token) load(); });
+  load();
+  setInterval(load, 60000);
+</script>
+</body></html>

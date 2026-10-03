@@ -1,0 +1,15 @@
+{
+  "daily_spend_cap_usd": 10.0,
+  "per_call_cap_usd": 25.0,
+  "rate_limit_per_min": 30.0,
+  "auto_approve_read": true,
+  "auto_approve_act": true,
+  "require_approval_spend": true,
+  "require_approval_delete": true,
+  "tiers": {
+    "undo": {
+      "tier": "delete",
+      "approval": true
+    }
+  }
+}

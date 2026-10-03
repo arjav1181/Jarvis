@@ -1,0 +1,8 @@
+{"ts": 1790591866.5425777, "iso": "2026-09-28T10:37:46", "action": "spend", "tier": "spend", "actor": "user", "target": "a", "result": "$4.0000", "detail": "recorded spend", "cost": 0.0}
+{"ts": 1790591866.5430362, "iso": "2026-09-28T10:37:46", "action": "spend", "tier": "spend", "actor": "user", "target": "b", "result": "$1.0000", "detail": "recorded spend", "cost": 0.0}
+{"ts": 1790591866.5587602, "iso": "2026-09-28T10:37:46", "action": "probe_one", "tier": "act", "actor": "tester", "target": "t", "result": "allowed", "detail": "", "cost": 0.0}
+{"ts": 1790591866.558962, "iso": "2026-09-28T10:37:46", "action": "probe_two", "tier": "spend", "actor": "scheduler", "target": "t", "result": "blocked", "detail": "", "cost": 0.0}
+{"ts": 1790593190.1486773, "iso": "2026-09-28T10:59:50", "action": "spend", "tier": "spend", "actor": "user", "target": "a", "result": "$4.0000", "detail": "recorded spend", "cost": 0.0}
+{"ts": 1790593190.152169, "iso": "2026-09-28T10:59:50", "action": "spend", "tier": "spend", "actor": "user", "target": "b", "result": "$1.0000", "detail": "recorded spend", "cost": 0.0}
+{"ts": 1790593190.1556642, "iso": "2026-09-28T10:59:50", "action": "probe_one", "tier": "act", "actor": "tester", "target": "t", "result": "allowed", "detail": "", "cost": 0.0}
+{"ts": 1790593190.156236, "iso": "2026-09-28T10:59:50", "action": "probe_two", "tier": "spend", "actor": "scheduler", "target": "t", "result": "blocked", "detail": "", "cost": 0.0}

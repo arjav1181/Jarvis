@@ -1,0 +1,47 @@
+MIT License
+
+Copyright (c) 2026 Arjav Jain
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+───────────────────────────────────────────────────────────────────────────────
+THIRD-PARTY COMPONENTS — THESE OVERRIDE THE TERMS ABOVE WHERE THEY APPLY
+───────────────────────────────────────────────────────────────────────────────
+
+This licence covers our own code only. Two vendored components carry terms
+that are stricter than MIT, and they govern those components:
+
+1. godseye/ — "God's Eye View" by Bilawal Sidhu, MIT for the code. Its
+   bundled datasets are NOT all MIT. Per godseye/MANIFEST.json, the
+   telegeography submarine-cable dataset is CC BY-NC-SA 3.0, which is
+   non-commercial and share-alike.
+
+   CONSEQUENCE: this repository as distributed is PERSONAL AND
+   NON-COMMERCIAL. The MIT grant above applies to everything except that
+   dataset. Do not use this project, as distributed, for commercial purposes
+   without removing that dataset or obtaining permission from its authors.
+
+   If you fork this for anything commercial, start by deleting the
+   non-commercial dataset, or by dropping the godseye/ tree entirely.
+
+2. dashboard/static/music/ — four welcome stings by Kevin MacLeod, CC BY 4.0.
+   Attribution is required and is recorded in CREDITS.md.
+
+Full attribution for every dependency, including the ones consulted during
+development, is in CREDITS.md.
