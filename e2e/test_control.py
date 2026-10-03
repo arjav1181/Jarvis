@@ -229,15 +229,15 @@ def served() -> None:
     print("== server: every knob, one call ==", flush=True)
     tok = token()
     paths = ["/api/control", "/api/journal", "/api/calendar", "/api/files",
-             "/api/home", "/api/browser", "/api/campaigns", "/api/voice",
+             "/api/home", "/api/browser", "/api/voice",
              "/api/auth", "/api/proactive", "/api/search?q=acme"]
     for p in paths:
         check(f"auth.401 {p.split('?')[0]}", api(p)[0] == 401, p)
 
     st, d = api("/api/control", tok=tok)
     check("control.one_call", st == 200 and len(d) >= 12, sorted(d))
-    for key in ("org", "policy", "journal", "knowledge", "billing", "files",
-                "calendar", "home", "browser", "campaigns", "voice", "auth",
+    for key in ("org", "policy", "journal", "knowledge", "files",
+                "calendar", "home", "browser", "voice", "auth",
                 "proactive", "scheduler", "approvals"):
         check(f"control.has_{key}", key in d and "error" not in (d[key] or {}),
               (d.get(key) or {}).get("error", ""))
@@ -359,14 +359,6 @@ def served() -> None:
     st, r = api("/api/browser", {"op": "allow", "host": "not a host!"}, tok=tok)
     check("browser.rejects_junk_host", st == 400, st)
 
-    # campaigns: draft by default
-    st, r = api("/api/campaigns", tok=tok)
-    check("campaigns.lists", st == 200 and r["stats"]["sent"] == 0, r.get("stats"))
-    check("campaigns.no_open_tracking", "open tracking" in r["stats"]["note"],
-          r["stats"]["note"])
-    st, r = api("/api/campaigns", {"op": "send", "name": "nope"}, tok=tok)
-    check("campaigns.send_needs_a_campaign", st == 400, st)
-
     # voice + auth + proactive
     st, r = api("/api/voice", tok=tok)
     check("voice.status", st == 200 and "states" in r, sorted(r)[:5])
@@ -456,15 +448,15 @@ def served() -> None:
                          ("WAKE_PHRASE", "wake phrase matcher")]:
         check(f"client.{label.replace(' ', '_')}", probe in app, probe)
     for tab in ("overview", "boundary", "watches", "journal", "calendar", "files",
-                "home", "browser", "campaigns", "voice", "security"):
+                "home", "browser", "voice", "security"):
         check(f"client.tab_{tab}", f"['{tab}'," in app or f"'{tab}'" in app, tab)
     mp = (ROOT / "main.py").read_text(encoding="utf-8")
-    for tool in ("journal", "calendar", "files", "home", "browser", "campaign",
+    for tool in ("journal", "calendar", "files", "home", "browser",
                  "proactive", "voice"):
         check(f"tool.{tool}_declared", f'"name": "{tool}"' in mp)
     assert 'elif name in ("journal"' in mp, "the shared dispatch branch is missing"
     dispatch = mp.split('elif name in ("journal"')[-1]
-    for tool in ("journal", "calendar", "files", "home", "browser", "campaign",
+    for tool in ("journal", "calendar", "files", "home", "browser",
                  "proactive", "voice"):
         check(f"tool.{tool}_in_dispatch", f'"{tool}"' in dispatch, tool)
 
